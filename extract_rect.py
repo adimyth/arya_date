@@ -72,7 +72,7 @@ class ExtractRectangle:
         cImage = np.copy(img)
 
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        canny = cv.Canny(gray, 50, 150)
+        canny = cv.Canny(gray, 100, 200)
 
         horizontal_lines = self.get_lines(canny)
         horizontal_lines = sorted(horizontal_lines, key=lambda a_entry: a_entry[..., 1])
@@ -91,7 +91,7 @@ class ExtractRectangle:
             top = max(y1, y2)
 
             # post whitespace removal, dates should only be the major component
-            if abs(final_line[1] - initial_line[1]) / img.shape[0] < 0.85:
+            if (top-bottom) / img.shape[0] < 0.6:
                 errenous = True
         else:
             errenous = True
@@ -106,7 +106,7 @@ class ExtractRectangle:
             right = max(x1, x2)
 
             # as dates occupy majority of the horizontal space
-            if abs(final_line[0] - initial_line[0]) / img.shape[1] < 0.6:
+            if (right-left) / img.shape[1] < 0.75:
                 errenous = True
         else:
             errenous = True
@@ -121,12 +121,12 @@ class ExtractRectangle:
 
 if __name__ == "__main__":
     extract = ExtractRectangle()
-    test_files = glob("data/raw/test_data/*.png")
+    test_files = glob("data/raw/test/*.png")
     test_path = "data/processed/test/"
     for path in tqdm(test_files):
         extract.process_image(path, test_path)
 
-    train_files = glob("data/raw/train_data/*.png")
+    train_files = glob("data/raw/train/*.png")
     train_path = "data/processed/train/"
     for path in tqdm(train_files):
         extract.process_image(path, train_path)

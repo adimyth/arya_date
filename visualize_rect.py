@@ -90,7 +90,7 @@ class ExtractRectangle:
             top = max(y1, y2)
 
             # post whitespace removal, dates should only be the major component
-            if abs(final_line[1] - initial_line[1]) / img.shape[0] < 0.85:
+            if (top-bottom) / img.shape[0] < 0.6:
                 errenous = True
         else:
             errenous = True
@@ -105,13 +105,13 @@ class ExtractRectangle:
             right = max(x1, x2)
 
             # as dates occupy majority of the horizontal space
-            if abs(final_line[0] - initial_line[0]) / img.shape[1] < 0.6:
+            if (right-left) / img.shape[1] < 0.75:
                 errenous = True
         else:
             errenous = True
 
         if len(horizontal_lines) > 0 and len(vertical_lines) > 0:
-            cImage = cv.rectangle(cImage, (left, bottom), (right, top), (255, 0, 0), 2)
+            cImage = cv.rectangle(cImage, (left, bottom), (right, top), (0, 0, 255), 2)
 
         if errenous:
             cv.imwrite(f"{error_path}/{filename.split('/')[-1]}", cImage)
@@ -121,14 +121,14 @@ class ExtractRectangle:
 
 if __name__ == "__main__":
     extract = ExtractRectangle()
-    test_files = glob("data/raw/test_data/*.png")
-    test_crc_path = "data/intermediate/test"
-    test_err_path = "data/intermediate/test_errenous"
+    test_files = glob("data/raw/test/*.png")
+    test_crc_path = "data/interim/test"
+    test_err_path = "data/interim/test_errenous"
     for path in tqdm(test_files):
         extract.process_image(path, test_crc_path, test_err_path)
 
-    train_files = glob("data/raw/train_data/*.png")
-    train_crc_path = "data/intermediate/train"
-    train_err_path = "data/intermediate/train_errenous"
+    train_files = glob("data/raw/train/*.png")
+    train_crc_path = "data/interim/train"
+    train_err_path = "data/interim/train_errenous"
     for path in tqdm(train_files):
         extract.process_image(path, train_crc_path, train_err_path)
