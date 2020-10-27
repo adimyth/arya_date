@@ -11,5 +11,8 @@ The training and test dataset is specially synthesized to test the generalisatio
 positions, as some of the positions in training data is heavily biased for certain digit/digits
 To submit the results, one would require the credentials that are used to log in to the RDP
 instance.
-Link to download required data - ​http://13.234.225.243:
+Link to download required data - ​http://13.234.225.243:9600
 The training and test images can be extracted from the respective tar files.
+
+**References**
+https://www.pyimagesearch.com/2018/06/04/keras-multiple-outputs-and-multiple-losses/
