@@ -105,19 +105,19 @@ class ExtractRectangle:
             right = max(x1, x2)
 
             # as dates occupy majority of the horizontal space
-            if (right - left) / img.shape[1] <= 0.95:
+            if (right - left) / img.shape[1] <= 0.98:
                 errenous = True
         else:
             errenous = True
 
         if len(horizontal_lines) > 0 and len(vertical_lines) > 0:
-            cImage = cv.rectangle(cImage, (left, bottom), (right, top), (0, 0, 255), 2)
+            cImage = cv.rectangle(cImage, (left, bottom), (right, top), (0, 0, 255), 1)
 
         if errenous:
             cv.imwrite(f"{error_path}/{filename.split('/')[-1]}", cImage)
         else:
             cImage = cImage[
-                bottom : bottom + (top - bottom), left : left + (right - left)
+                (bottom+1) : bottom + (top - bottom), (left+1) : left + (right - left)
             ]
             cv.imwrite(f"{correct_path}/{filename.split('/')[-1]}", cImage)
 
