@@ -1,4 +1,5 @@
 from glob import glob
+import random
 
 import cv2 as cv
 import numpy as np
@@ -27,7 +28,7 @@ class ImageSplitter:
         return dst
 
     def split_image(self, path, label):
-        label = str(label)
+        label = str(label).zfill(8)
         img = cv.imread(cv.samples.findFile(path))
         img = self.remove_whitespace(img)
 
@@ -36,17 +37,21 @@ class ImageSplitter:
         cw = int(width / 8)
         for idx in range(8):
             crop = img[0:height, idx * cw : (idx + 1) * cw]
-            cv.imshow(label[idx], crop)
-            cv.waitKey(0)
-            cv.destroyAllWindows()
+            cv.imwrite(
+                f"data/digits/train/{int(label[idx])}/{random.randint(0, 1000)}.png",
+                crop,
+            )
 
 
 if __name__ == "__main__":
-    base = "data/processed/train/"
-    train_files = [base + f"{x}.png" for x in range(5)]
+    base = "data/interim/train/"
+    train_files = glob(base + "/*.png")
     df = pd.read_csv(base + "corrected_train_data.csv")
-    train_labels = [df[df["tag"] == x]["label"].values[0] for x in range(5)]
+    train_labels = [
+        df[df["tag"] == int(x.split("/")[-1].split(".")[0])]["label"].values[0]
+        for x in train_files
+    ]
 
     extract = ImageSplitter()
-    for path, label in dict(zip(train_files, train_labels)).items():
+    for path, label in tqdm(dict(zip(train_files, train_labels)).items()):
         extract.split_image(path, label)

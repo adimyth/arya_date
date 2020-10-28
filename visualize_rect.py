@@ -90,7 +90,7 @@ class ExtractRectangle:
             top = max(y1, y2)
 
             # post whitespace removal, dates should only be the major component
-            if (top-bottom) / img.shape[0] < 0.6:
+            if (top - bottom) / img.shape[0] < 0.6:
                 errenous = True
         else:
             errenous = True
@@ -105,7 +105,7 @@ class ExtractRectangle:
             right = max(x1, x2)
 
             # as dates occupy majority of the horizontal space
-            if (right-left) / img.shape[1] < 0.85:
+            if (right - left) / img.shape[1] <= 0.95:
                 errenous = True
         else:
             errenous = True
@@ -116,6 +116,9 @@ class ExtractRectangle:
         if errenous:
             cv.imwrite(f"{error_path}/{filename.split('/')[-1]}", cImage)
         else:
+            cImage = cImage[
+                bottom : bottom + (top - bottom), left : left + (right - left)
+            ]
             cv.imwrite(f"{correct_path}/{filename.split('/')[-1]}", cImage)
 
 
