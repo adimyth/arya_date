@@ -20,6 +20,8 @@ pillow = "^8.0.1"
 scikit-image = "^0.17.2"
 tensorflow = "2.3.0"
 jupyterlab = "^2.2.9"
+rapids = "^0.0.1"
+efficientnet = "^1.1.1"
 
 [tool.poetry.dev-dependencies]
 
