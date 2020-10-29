@@ -33,14 +33,15 @@ class ImageSplitter:
         img = self.remove_whitespace(img)
 
         height, width = img.shape[:2]
-        start, end = 0, 0
-        cw = int(width / 8)
-        for idx in range(8):
-            crop = img[0:height, idx * cw : (idx + 1) * cw]
-            cv.imwrite(
-                f"data/digits/train/{int(label[idx])}/{random.randint(0, 1000)}.png",
-                crop,
-            )
+        if width < 320:
+            start, end = 0, 0
+            cw = int(width / 8)
+            for idx in range(8):
+                crop = img[0:height, idx * cw : (idx + 1) * cw]
+                cv.imwrite(
+                    f"data/digits/train/{int(label[idx])}/{random.randint(0, 1000)}.png",
+                    crop,
+                )
 
 
 if __name__ == "__main__":

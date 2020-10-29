@@ -111,13 +111,13 @@ class ExtractRectangle:
             errenous = True
 
         if len(horizontal_lines) > 0 and len(vertical_lines) > 0:
-            cImage = cv.rectangle(cImage, (left, bottom), (right, top), (0, 0, 255), 1)
+            cImage = cv.rectangle(cImage, (left, bottom), (right, top), (255, 0, 0), 1)
 
         if errenous:
             cv.imwrite(f"{error_path}/{filename.split('/')[-1]}", cImage)
         else:
             cImage = cImage[
-                (bottom+1) : bottom + (top - bottom), (left+1) : left + (right - left)
+                bottom : bottom + (top - bottom), left : left + (right - left)
             ]
             cv.imwrite(f"{correct_path}/{filename.split('/')[-1]}", cImage)
 
