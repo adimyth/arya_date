@@ -1,10 +1,10 @@
-from glob import glob
 import random
+from glob import glob
+from pathlib import Path
 
 import cv2 as cv
 import numpy as np
 import pandas as pd
-from pathlib import Path
 from tqdm import tqdm
 
 
