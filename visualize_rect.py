@@ -53,7 +53,7 @@ class ExtractRectangle:
     def remove_whitespace(self, img):
         # https://stackoverflow.com/questions/48395434/how-to-crop-or-remove-white-background-from-an-image
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        th, threshed = cv.threshold(gray, 127, 255, cv.THRESH_BINARY_INV)
+        _, threshed = cv.threshold(gray, 200, 255, cv.THRESH_BINARY)
 
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (11, 11))
         morphed = cv.morphologyEx(threshed, cv.MORPH_CLOSE, kernel)
@@ -71,7 +71,6 @@ class ExtractRectangle:
         img = self.remove_whitespace(img)
         cImage = np.copy(img)
 
-        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         canny = cv.Canny(gray, 50, 150)
 
         horizontal_lines = self.get_lines(canny)
@@ -105,7 +104,7 @@ class ExtractRectangle:
             right = max(x1, x2)
 
             # as dates occupy majority of the horizontal space
-            if (right - left) / img.shape[1] <= 0.98:
+            if (right - left) / img.shape[1] < 0.9:
                 errenous = True
         else:
             errenous = True

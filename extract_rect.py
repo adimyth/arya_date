@@ -106,7 +106,7 @@ class ExtractRectangle:
             right = max(x1, x2)
 
             # as dates occupy majority of the horizontal space
-            if (right - left) / img.shape[1] < 0.7:
+            if (right - left) / img.shape[1] < 0.9:
                 errenous = True
         else:
             errenous = True
