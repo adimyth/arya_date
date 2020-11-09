@@ -11,24 +11,33 @@ But while inference the model should not be biased towards certain digits across
 may bypass many invalid dates
 The training and test dataset is specially synthesized to test the generalisation of model across
 positions, as some of the positions in training data is heavily biased for certain digit/digits
-Link to download required data - ​http://13.234.225.243:9600
+
+Link to download required data - ​[http://13.234.225.243:9600](http://13.234.225.243:9600)
+
 The training and test images can be extracted from the respective tar files.
 
 ## Preprocessing & Data Augmentation
 
 ## OCR
-There are many approaches discussed in [this](https://towardsdatascience.com/a-gentle-introduction-to-ocr-ee1469a201aa) article. However, the *Specialized DL Approaches* & *Standard DL Approaches* require converting data in one form or the other. CRNN works on the dataset provided out of the box.
-
 OCR usually has two stages -
 * **Text Detection** - Text Detection is minimal here, as the dates are already focused upon. Additional cleaning steps such as removing whitespaces, extracting datebox is applied.
 * **Text Recognition** -
 
-CRNN model consisting of a CNN & RNN block.
-* CNN - Two convolution & maxpool layer
-* RNN - Two Bidirectional LSTM layers
-The output of RNN is passed through a CTC layer, which uses CTC loss.
+### CRNN
+There are many approaches discussed in [this](https://towardsdatascience.com/a-gentle-introduction-to-ocr-ee1469a201aa) article. However, the *Specialized DL Approaches* & *Standard DL Approaches* require converting data in one form or the other. CRNN works on the dataset provided out of the box.
+
+CRNN model consisting of a CNN & RNN blocks along with a Transcription Layer.
+* CNN Block - Two convolution & maxpool layer. Extracts features from image
+* RNN Block - Two Bidirectional LSTM layers. Splits features into some feature sequences & pass it to recurrent layers
+* Transcription Layer - Conversion of Feature-specific predictions to Label using CTC. CTC loss is specially designed to optimize both the *length* of the predicted sequence and the *classes* of the predicted sequence
+
 
 ![CRNN](https://miro.medium.com/max/894/0*nGWtig3Cd0Jma2nX)
+
+* Training & Inference Notebook - [digits_ocr_kfold | Kaggle Kernel Noteboook](https://www.kaggle.com/aditya08/digits-ocr/)
+* Model weights & submissions - [digits_ocr_kfold | Kaggle Kernel Output](https://www.kaggle.com/aditya08/digits-ocr/output)
+
+`"score": {"acc_8":0.69, "acc_7":0.791, "acc_5":0.92}`
 
 ## OCR K-Fold
 ### Model
@@ -45,7 +54,13 @@ Refer [ensemble_folds.ipynb](ensemble_folds.ipynb) for the implementation
 * Training & Inference Notebook - [digits_ocr_kfold | Kaggle Kernel Noteboook](https://www.kaggle.com/aditya08/digits-ocr-kfold?scriptVersionId=46308584)
 * Model weights & submissions - [digits_ocr_kfold | Kaggle Kernel Output](https://www.kaggle.com/aditya08/digits-ocr-kfold/output?scriptVersionId=46308584)
 
+`"score": {"acc_8":0.698, "acc_7":0.778, "acc_5":0.946}`
+
 ## Things to Try
+* Use larger model with more number of convolution blocks. Apply BatchNormalization after each convolution block
+* For some cases the model predicts sequences of length other than 8. Maybe playing around with the number of units in the last Bi-LSTM layer might help
+* CRNN with Spatial Transformer - https://github.com/sbillburg/CRNN-with-STN
+* Use model weights trained from CRNN on SVHN dataset - https://github.com/kfengtee/crnn-license-plate-OCR. (Based on torch)
 * Some augmentation techniques used by participants in [Bengali.AI Handwritten Grapheme Classification](https://www.kaggle.com/c/bengaliai-cv19)
 
 ## Related Work
