@@ -2,6 +2,7 @@ from glob import glob
 
 import cv2 as cv
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 
@@ -12,6 +13,9 @@ class ExtractRectangle:
         self.minLinLength_h = 70
         self.minLinLength_v = 5
         self.maxLineGap = 20
+        self.heights = []
+        self.widths = []
+        self.paths = []
 
     def is_horizontal(self, line, thresh=5):
         return abs(line[1] - line[3]) <= thresh
@@ -106,7 +110,7 @@ class ExtractRectangle:
             right = max(x1, x2)
 
             # as dates occupy majority of the horizontal space
-            if (right - left) / img.shape[1] < 0.9:
+            if (right - left) / img.shape[1] <= 0.98:
                 errenous = True
         else:
             errenous = True
@@ -116,7 +120,16 @@ class ExtractRectangle:
             cImage = cImage[
                 bottom : bottom + (top - bottom), left : left + (right - left)
             ]
+            self.paths.append(filename)
+            self.heights.append(top - bottom)
+            self.widths.append(right - left)
         cv.imwrite(f"{path}/{filename.split('/')[-1]}", cImage)
+
+    def save_crop_info(self):
+        df = pd.DataFrame(
+            {"path": self.paths, "height": self.heights, "width": self.widths}
+        )
+        df.to_csv("cropped_image_info.csv", index=False)
 
 
 if __name__ == "__main__":
@@ -130,3 +143,6 @@ if __name__ == "__main__":
     train_path = "data/processed/train/"
     for path in tqdm(train_files):
         extract.process_image(path, train_path)
+
+    # saving crop info
+    extract.save_crop_info()
