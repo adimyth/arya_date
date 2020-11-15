@@ -34,7 +34,7 @@ CRNN model consists of CNN & RNN blocks along with a Transcription Layer.
 
 CRNN works on the dataset provided out of the box.
 
-* Training & Inference Notebook - [digits-ocr | Kaggle Kernel Noteboook](https://www.kaggle.com/aditya08/digits-ocr/)
+* Training & Inference Notebook - [digits-ocr](https://github.com/adimyth/arya_date/blob/master/notebooks/digits-ocr.ipynb)
 * Model weights & submissions - [digits-ocr | Kaggle Kernel Output](https://www.kaggle.com/aditya08/digits-ocr/output)
 
 > "score": {"acc_8":0.69, "acc_7":0.791, "acc_5":0.92}
@@ -72,7 +72,7 @@ Trained a model per fold using [MultiLabelStratifiedKFold](https://github.com/tr
 **Positionwise Majority Voting** - For other cases (# common preds <=2), choose the digit which occurs the most at a given index. This is the same as above technique but at a more granular level.
 Refer [ensemble_folds.ipynb](ensemble_folds.ipynb) for the implementation
 
-* Training & Inference Notebook - [digits_ocr_kfold | Kaggle Kernel Noteboook](https://www.kaggle.com/aditya08/digits-ocr-kfold?scriptVersionId=46308584)
+* Training & Inference Notebook - [digits_ocr_kfold](https://github.com/adimyth/arya_date/blob/master/notebooks/digits-ocr-kfold.ipynb)
 * Model weights & submissions - [digits_ocr_kfold | Kaggle Kernel Output](https://www.kaggle.com/aditya08/digits-ocr-kfold/output?scriptVersionId=46308584)
 
 > "score": {"acc_8":0.698, "acc_7":0.778, "acc_5":0.946}
@@ -94,7 +94,7 @@ python run inference_kfold.py infer test test.csv
 ```
 
 ## Things to Try
-* Use larger model with more number of convolution blocks. Apply BatchNormalization after each convolution block
+* Use larger model with more number of convolution blocks.
 * For some cases the model predicts sequences of length other than 8. Maybe playing around with the number of units in the last Bi-LSTM layer might help
 * CRNN with Spatial Transformer - https://github.com/sbillburg/CRNN-with-STN
 * Use model weights trained from CRNN on SVHN dataset - https://github.com/kfengtee/crnn-license-plate-OCR. (Based on torch)
@@ -102,6 +102,8 @@ python run inference_kfold.py infer test test.csv
 
 ## Related Work
 [SEE](https://arxiv.org/pdf/1712.05404.pdf)  —  Semi-Supervised End-to-End Scene Text Recognition too works just with text annotation & doesn't require bounding boxes.
+
+[Attention OCR](https://github.com/tensorflow/models/tree/master/research/attention_ocr) - Attention-based Extraction of Structured Information from Street View Imagery
 
 ## Image Captioning
 Treated the problem as an image captioning problem. Code was taken from [tensorflow's image captioning tutorial](https://www.tensorflow.org/tutorials/text/image_captioning). Experimented with EfficientNetB3 along with InceptionV3 as the base model for feature extraction.
