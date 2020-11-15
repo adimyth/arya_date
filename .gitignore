@@ -5,12 +5,12 @@ __pycache__/
 
 # Self-added
 data/
-models/
 logs/
 submissions/
 .DS_Store/
 .ipynb_checkpoints/
 *.npy
+.DS_Store/
 
 # Distribution / packaging
 .Python
