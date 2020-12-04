@@ -12,7 +12,7 @@ may bypass many invalid dates
 The training and test dataset is specially synthesized to test the generalisation of model across
 positions, as some of the positions in training data is heavily biased for certain digit/digits
 
-Link to download required data - ​[http://13.234.225.243:9600](http://13.234.225.243:9600)
+Link to download required data - ​[http://13.232.114.193:9600](http://13.232.114.193:9600)
 
 The training and test images can be extracted from the respective tar files.
 
@@ -25,7 +25,7 @@ OCR has two stages -
 
 ## CRNN
 CRNN model consists of CNN & RNN blocks along with a Transcription Layer.
-* CNN Block - Two convolution & maxpool layer. Extracts features from image
+* CNN Block - Three convolution blocks (7 conv layers) & maxpool layer. Extracts features from image.
 * RNN Block - Two Bidirectional LSTM layers. Splits features into some feature sequences & pass it to recurrent layers
 * Transcription Layer - Conversion of Feature-specific predictions to Label using CTC. CTC loss is specially designed to optimize both the *length* of the predicted sequence and the *classes* of the predicted sequence
 
@@ -35,18 +35,18 @@ CRNN model consists of CNN & RNN blocks along with a Transcription Layer.
 CRNN works on the dataset provided out of the box.
 
 * Training & Inference Notebook - [digits-ocr](https://github.com/adimyth/arya_date/blob/master/notebooks/digits-ocr.ipynb)
-* Model weights & submissions - [digits-ocr | Kaggle Kernel Output](https://www.kaggle.com/aditya08/digits-ocr/output)
+* Model weights & submissions - [digits-ocr | Kaggle Kernel Output](https://www.kaggle.com/aditya08/digits-ocr-crnn/output)
 
-> "score": {"acc_8":0.69, "acc_7":0.791, "acc_5":0.92}
+> "score": {"acc_8":0.782, "acc_7":0.91, "acc_5":0.961}
 
 ### Inferencing
 Run the model on your dataset -
 
 ```bash
 cd inference
-python run inference.py infer test test.csv
+poetry run python inference.py infer test_dir test.csv
 ```
-* test - path to test directory
+* test_dir - path to test directory
 * test.csv - File to save the test predictions
 Running the above command will output a csv file with images from *test* directory with corresponding predictions
 
@@ -54,7 +54,7 @@ Running the above command will output a csv file with images from *test* directo
 
 Download [test.zip](https://www.kaggle.com/aditya08/arya-date?select=test) & extract it. From within **inference directory** run -
 ```bash
-python run inference.py infer test test.csv
+poetry run python inference.py infer test test.csv
 ```
 
 ![CRNN Test Prediction](result.png)
@@ -73,16 +73,16 @@ Trained a model per fold using [MultiLabelStratifiedKFold](https://github.com/tr
 Refer [ensemble_folds.ipynb](ensemble_folds.ipynb) for the implementation
 
 * Training & Inference Notebook - [digits_ocr_kfold](https://github.com/adimyth/arya_date/blob/master/notebooks/digits-ocr-kfold.ipynb)
-* Model weights & submissions - [digits_ocr_kfold | Kaggle Kernel Output](https://www.kaggle.com/aditya08/digits-ocr-kfold/output?scriptVersionId=46308584)
+* Model weights & submissions - [digits_ocr_kfold | Kaggle Kernel Output](https://www.kaggle.com/aditya08/digits-ocr-kfold)
 
-> "score": {"acc_8":0.698, "acc_7":0.778, "acc_5":0.946}
+> "score": {"acc_8":0.955, "acc_7":0.961, "acc_5":0.969}
 
 ### Inferencing
 Run the model on your dataset -
 
 ```bash
 cd inference
-python run inference_kfold.py infer test test.csv
+python run inference_kfold.py infer test_dir test.csv
 ```
 Use `--help` argument for more information
 
@@ -93,10 +93,14 @@ Download [test.zip](https://www.kaggle.com/aditya08/arya-date?select=test) & ext
 python run inference_kfold.py infer test test.csv
 ```
 
+## Things Tried
+**CRNN with Spatial Transformer** - Adding a STN block didn't work in this case. Need to figure out probable cause.
+
+Work in progress. Refer my Kaggle Kernel [here](https://www.kaggle.com/aditya08/digits-ocr-crnn?scriptVersionId=48346354)
+
+
 ## Things to Try
-* Use larger model with more number of convolution blocks.
 * For some cases the model predicts sequences of length other than 8. Maybe playing around with the number of units in the last Bi-LSTM layer might help
-* CRNN with Spatial Transformer - https://github.com/sbillburg/CRNN-with-STN
 * Use model weights trained from CRNN on SVHN dataset - https://github.com/kfengtee/crnn-license-plate-OCR. (Based on torch)
 * Some augmentation techniques used by participants in [Bengali.AI Handwritten Grapheme Classification](https://www.kaggle.com/c/bengaliai-cv19)
 
