@@ -72,6 +72,7 @@ class ExtractRectangle:
         errenous = False
         img = cv.imread(cv.samples.findFile(filename))
         img = self.remove_whitespace(img)
+        # cv.imwrite(f"{path}/{filename.split('/')[-1]}", img)
         cImage = np.copy(img)
 
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -94,7 +95,7 @@ class ExtractRectangle:
             top = max(y1, y2)
 
             # post whitespace removal, dates should only be the major component
-            if (top - bottom) / img.shape[0] < 0.6:
+            if (top - bottom) / img.shape[0] < 0.7:
                 errenous = True
         else:
             errenous = True

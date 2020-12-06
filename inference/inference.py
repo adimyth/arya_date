@@ -5,53 +5,84 @@ import cv2
 import fire
 import numpy as np
 import pandas as pd
-from architecture import build_model
-from data_generator import DataGenerator
-from tensorflow.keras.backend import ctc_decode
 from tqdm import tqdm
 
+import tensorflow as tf
+from tensorflow.keras.backend import ctc_decode
+from tensorflow.keras.layers.experimental.preprocessing import StringLookup
+
+from architecture import build_model
 from extract_rect import ExtractRectangle
 
 
 class Prediction:
     def __init__(self):
         super().__init__()
-        characters = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-        char_to_labels = {char: idx for idx, char in enumerate(characters)}
-        self.labels_to_char = {val: key for key, val in char_to_labels.items()}
+        characters = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+        char_to_labels = StringLookup(
+            vocabulary=list(characters), num_oov_indices=0, mask_token=None
+        )
+        self.labels_to_char = StringLookup(
+            vocabulary=char_to_labels.get_vocabulary(), mask_token=None, invert=True
+        )
         self.img_height = 50
         self.img_width = 250
+        self.batch_size = 32
+        self.max_length = 8
         self.extract = ExtractRectangle()
         self.prediction_model = build_model()
         self.prediction_model.load_weights("models/digits_ocr.h5")
 
-    def generate_arrays(self, image_list):
-        num_items = len(image_list)
-        images = np.zeros(
-            (num_items, self.img_height, self.img_width), dtype=np.float32
-        )
+    def encode_single_sample(self, img_path):
+        # 1. Read image
+        img = tf.io.read_file(img_path)
+        # 2. Decode and convert to grayscale
+        img = tf.io.decode_png(img, channels=1)
+        # 3. Convert to float32 in [0, 1] range
+        img = tf.image.convert_image_dtype(img, tf.float32)
+        # 4. Resize to the desired size
+        img = tf.image.resize(img, [self.img_height, self.img_width])
+        # 5. Transpose the image because we want the time
+        # dimension to correspond to the width of the image.
+        img = tf.transpose(img, perm=[1, 0, 2])
+        # 6. Return a dict as our model is expecting two inputs
+        return {"image": img}
 
-        for i, path in enumerate(image_list):
-            img = cv2.imread(path)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            img = cv2.resize(img, (self.img_width, self.img_height))
-            img = (img / 255.0).astype(np.float32)
-            images[i, :, :] = img
-        return images
+    def get_dataset(self, image_list):
+        test_dataset = tf.data.Dataset.from_tensor_slices(image_list)
+        test_dataset = (
+            test_dataset.map(
+                self.encode_single_sample, num_parallel_calls=tf.data.experimental.AUTOTUNE
+            )
+            .batch(self.batch_size)
+            .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+        )
+        return test_dataset
 
     def decode_batch_predictions(self, pred):
-        pred = pred[:, :-2]
         input_len = np.ones(pred.shape[0]) * pred.shape[1]
-        # greedy search
-        results = ctc_decode(pred, input_length=input_len, greedy=True)[0][0]
+        # Use greedy search. For complex tasks, you can use beam search
+        results = ctc_decode(pred, input_length=input_len, greedy=True)[0][0][
+            :, :self.max_length
+        ]
+        # Iterate over the results and get back the text
         output_text = []
-        for res in results.numpy():
-            outstr = ""
-            for c in res:
-                if c < 10 and c >= 0:
-                    outstr += self.labels_to_char[c]
-            output_text.append(outstr)
+        for res in results:
+            res = tf.strings.reduce_join(self.labels_to_char(res)).numpy().decode("utf-8")
+            output_text.append(res)
         return output_text
+
+    def get_all_preds(self, dataset):
+        decoded_text = []
+        for batch in tqdm(dataset):
+            batch_images = batch["image"]
+            preds = self.prediction_model.predict(batch_images)
+            pred_texts = self.decode_batch_predictions(preds)
+            decoded_text.append(pred_texts)
+
+        # flatten 2D list
+        decoded_text = list(chain.from_iterable(decoded_text))
+        return decoded_text
 
     def remove_last_one(self, label):
         idx = label.rfind("1")
@@ -75,24 +106,13 @@ class Prediction:
         for path in tqdm(test_files):
             self.extract.process_image(path, test_directory)
 
-        # Numpy Image array
-        print(f"[INFO] Loading Images")
-        data = self.generate_arrays(test_files)
-
-        # Get DataGenerator
-        print(f"[INFO] Creating Data Generator")
-        data_generator = DataGenerator(data, self.img_height, self.img_width)
+        # Get Tensorflow Dataset
+        print(f"[INFO] Creating DataSet")
+        dataset = self.get_dataset(test_files)
 
         # Predict & Decode
         print(f"[INFO] Predicting & Decoding")
-        decoded_text = []
-        for X_data in tqdm(data_generator):
-            bs = X_data.shape[0]
-            preds = self.prediction_model.predict(X_data)
-            pred_texts = self.decode_batch_predictions(preds)
-            decoded_text.append([pred_texts[i] for i in range(bs)])
-        # flatten 2D list
-        decoded_text = list(chain.from_iterable(decoded_text))
+        decoded_text = self.get_all_preds(dataset)
         decoded_text = [
             self.remove_last_one(x) if len(x) == 9 else x for x in decoded_text
         ]
