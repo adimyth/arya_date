@@ -29,6 +29,12 @@ CRNN model consists of CNN & RNN blocks along with a Transcription Layer.
 * RNN Block - Two Bidirectional LSTM layers. Splits features into some feature sequences & pass it to recurrent layers
 * Transcription Layer - Conversion of Feature-specific predictions to Label using CTC. CTC loss is specially designed to optimize both the *length* of the predicted sequence and the *classes* of the predicted sequence
 
+In CRNN convolution feature maps are transformed into a sequence of feature vectors. It is then fed to LSTM/GRU which produces a probability distribution for each feature vector and each label. For example, consider the output of CNN Block is - `(batch_size, 64, 4, 32)` where dimensions are `(batch_size, channels, height, width)`. Then we need to permute dimensions to `(batch_size, width, height, channels)` so that channels is the last one.
+
+> Each feature vector of a feature sequence is generated from left to right on the feature maps by column. This means the i-th feature vector is the concatenation of the i-th columns of all the maps.
+
+It is then reshaped to `(batch_size, 32, 256)` and fed into the GRU layers. GRU produces tensor of shape `(batch_size, 32, 256)` which is passed through fully-connected layer and log_softmax function to return tensor of the shape `(batch_size, 32, vocabulary)`. **This tensor for each image in the batch contains probabilities of each label for each input feature.**
+
 
 ![CRNN](https://miro.medium.com/max/894/0*nGWtig3Cd0Jma2nX)
 
